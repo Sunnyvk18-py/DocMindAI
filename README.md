@@ -39,3 +39,20 @@ Then open [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs) for the inter
 | POST   | `/upload` | Upload a PDF (multipart form)  |
 
 Uploaded PDFs are stored under the `uploads/` directory.
+
+## Publish to GitHub
+
+GitHub CLI (`gh`) should be installed. From this folder, sign in once (browser or token), then create the remote repo and push:
+
+```powershell
+gh auth login
+cd "e:\Projects\DocMind AI"
+gh repo create docmind-ai --public --source=. --remote=origin --push
+```
+
+Use another repo name instead of `docmind-ai` if you prefer. If the repo already exists on GitHub, add the remote and push:
+
+```powershell
+git remote add origin https://github.com/YOUR_USERNAME/docmind-ai.git
+git push -u origin main
+```
