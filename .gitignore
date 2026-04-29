@@ -1,0 +1,25 @@
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+dist/
+build/
+
+# Environment / secrets
+.env
+.env.*
+
+# Uploaded PDFs (keep folder with .gitkeep)
+uploads/*
+!uploads/.gitkeep
+
+# IDE
+.idea/
+.vscode/
