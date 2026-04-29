@@ -1,5 +1,9 @@
 """
-DocMind AI — FastAPI application (Phase 1: file upload).
+DocMind AI — FastAPI application.
+
+Phases implemented here:
+- Upload PDFs to uploads/
+- Extract text (parser) and chunk text (chunker) for later RAG / embeddings.
 
 Run from the project root:
     uvicorn backend.app:app --reload
@@ -9,6 +13,20 @@ import uuid
 from pathlib import Path
 
 from fastapi import FastAPI, File, HTTPException, UploadFile
+from pydantic import BaseModel, Field
+
+from backend.chunker import chunk_text
+from backend.parser import extract_text_from_pdf
+
+
+class UploadProcessResponse(BaseModel):
+    """JSON shape returned after a PDF is saved, parsed, and chunked."""
+
+    message: str = Field(..., description="Human-readable status")
+    saved_as: str = Field(..., description="Filename under uploads/")
+    text_preview: str = Field(..., description="First 500 characters of extracted text")
+    total_characters: int = Field(..., description="Length of full extracted text")
+    total_chunks: int = Field(..., description="Number of overlapping text chunks (for future RAG)")
 
 # --- Paths -----------------------------------------------------------------
 # This file lives in backend/, so the project root is one level up.
@@ -21,8 +39,8 @@ ALLOWED_PDF_CONTENT_TYPES = frozenset({"application/pdf"})
 # --- App -------------------------------------------------------------------
 app = FastAPI(
     title="DocMind AI",
-    description="Phase 1: PDF upload API. Embeddings and parsing come later.",
-    version="0.1.0",
+    description="PDF upload, text extraction, and chunking. Embeddings and OpenAI are not wired yet.",
+    version="0.2.0",
 )
 
 
@@ -38,10 +56,10 @@ def health() -> dict[str, str]:
     return {"status": "ok"}
 
 
-@app.post("/upload")
-async def upload_pdf(file: UploadFile = File(...)) -> dict[str, str]:
+@app.post("/upload", response_model=UploadProcessResponse)
+async def upload_pdf(file: UploadFile = File(...)) -> UploadProcessResponse:
     """
-    Accept a single PDF file, validate it, save under uploads/, return a message.
+    Accept a PDF, save it, extract text, chunk text, return summary fields.
 
     - Rejects non-PDF content types.
     - Saves with a unique name to avoid collisions and unsafe filenames.
@@ -77,7 +95,26 @@ async def upload_pdf(file: UploadFile = File(...)) -> dict[str, str]:
     finally:
         await file.close()
 
-    return {
-        "message": "File uploaded successfully",
-        "saved_as": unique_name,
-    }
+    # --- Phase 2: read text from the saved PDF -----------------------------
+    try:
+        full_text = extract_text_from_pdf(str(dest_path))
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+    except ValueError as exc:
+        # Invalid PDF or per-page extraction failure — client can retry with a valid file.
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    # --- Phase 3: split into overlapping chunks (ready for future embeddings) ---
+    text_chunks = chunk_text(full_text)
+
+    # First 500 characters for a quick UI / API sanity check without sending the whole doc.
+    preview_limit = 500
+    text_preview = full_text[:preview_limit]
+
+    return UploadProcessResponse(
+        message="File uploaded and processed successfully",
+        saved_as=unique_name,
+        text_preview=text_preview,
+        total_characters=len(full_text),
+        total_chunks=len(text_chunks),
+    )

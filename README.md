@@ -1,6 +1,16 @@
 # DocMind AI
 
-Phase 1: PDF file upload API built with FastAPI.
+FastAPI service: **PDF upload**, **text extraction** (pypdf), and **overlapping chunks** (for future embeddings / RAG). No OpenAI or embeddings yet.
+
+## Project layout
+
+| Path | Role |
+|------|------|
+| `backend/app.py` | FastAPI app: `/health`, `/upload` |
+| `backend/parser.py` | `extract_text_from_pdf()` — reads all pages with pypdf |
+| `backend/chunker.py` | `chunk_text()` — sliding windows for LLM-sized pieces |
+| `uploads/` | Saved PDF files |
+| `requirements.txt` | Python dependencies |
 
 ## Setup
 
@@ -29,30 +39,47 @@ From the **project root** (the folder that contains `backend/` and `uploads/`):
 uvicorn backend.app:app --reload
 ```
 
-Then open [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs) for the interactive API (Swagger UI).
+Open [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs) for Swagger UI.
 
 ## Endpoints
 
-| Method | Path      | Description                    |
-| ------ | --------- | ------------------------------ |
-| GET    | `/health` | Returns `{"status": "ok"}`     |
-| POST   | `/upload` | Upload a PDF (multipart form)  |
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/health` | `{"status": "ok"}` |
+| POST | `/upload` | Multipart field **`file`**: validate PDF → save → extract text → chunk → JSON summary |
 
-Uploaded PDFs are stored under the `uploads/` directory.
+### `POST /upload` response
+
+After a successful upload you get:
+
+- `message` — status text  
+- `saved_as` — unique filename in `uploads/`  
+- `text_preview` — first 500 characters of extracted text  
+- `total_characters` — full extracted length  
+- `total_chunks` — count of non-empty overlapping chunks (defaults: 1000 chars, 200 overlap in `chunk_text`)
+
+Invalid or unreadable PDFs after save return **400** with a `detail` string from the parser.
 
 ## Publish to GitHub
 
-GitHub CLI (`gh`) should be installed. From this folder, sign in once (browser or token), then create the remote repo and push:
+Sign in once:
 
 ```powershell
 gh auth login
-cd "e:\Projects\DocMind AI"
-gh repo create docmind-ai --public --source=. --remote=origin --push
 ```
 
-Use another repo name instead of `docmind-ai` if you prefer. If the repo already exists on GitHub, add the remote and push:
+From this project folder (adjust path if yours differs):
 
 ```powershell
-git remote add origin https://github.com/YOUR_USERNAME/docmind-ai.git
+cd "e:\Projects\DocMind AI"
+git remote add origin https://github.com/Sunnyvk18-py/DocMindAI.git
 git push -u origin main
+```
+
+If `origin` already exists, use `git remote set-url origin https://github.com/Sunnyvk18-py/DocMindAI.git` then `git push`.
+
+To create a **new** repo and push in one step:
+
+```powershell
+gh repo create docmind-ai --public --source=. --remote=origin --push
 ```
