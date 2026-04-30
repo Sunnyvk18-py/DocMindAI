@@ -15,6 +15,7 @@ build/
 # Environment / secrets
 .env
 .env.*
+!.env.example
 
 # Uploaded PDFs (keep folder with .gitkeep)
 uploads/*
