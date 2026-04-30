@@ -84,6 +84,15 @@ uvicorn backend.app:app --reload
 
 Interactive docs: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
 
+## Automated tests (optional)
+
+Runs **`/health`**, **`/upload`**, **`/ask`**, **`/summary`**, **`/quiz`** once each using **mocks** (no real `OPENAI_API_KEY` required):
+
+```bash
+pip install -r requirements.txt -r requirements-dev.txt
+pytest tests/test_all_features_mocked.py -v
+```
+
 ## API endpoints
 
 | Method | Path | Description |

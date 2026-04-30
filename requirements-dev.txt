@@ -1,0 +1,2 @@
+# Optional: run automated smoke tests (no OpenAI key required — uses mocks).
+pytest>=8.0
