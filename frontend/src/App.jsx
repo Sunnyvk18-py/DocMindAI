@@ -47,7 +47,7 @@ export default function App() {
         <p className={`backend-pill ${backendStatus === "ok" ? "ok" : "warn"}`}>
           Backend:{" "}
           {backendStatus === "checking"
-            ? "Checking…"
+            ? "Checking..."
             : backendStatus === "ok"
               ? "Connected (GET /health)"
               : backendStatus}

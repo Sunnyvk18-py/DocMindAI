@@ -102,7 +102,9 @@ Interactive docs: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
    npm run dev
    ```
 
-3. Open the URL Vite prints (usually [http://localhost:5173](http://localhost:5173)).
+   Use **`npm run dev` only** (do not pass extra `127.0.0.1` / `5173` arguments after `--` on Windows — Vite can mis-read them as project roots and show a **blank page**).
+
+3. Open the URL Vite prints (usually [http://localhost:5173](http://localhost:5173) or `http://127.0.0.1:5173`).
 
 The UI calls **`http://127.0.0.1:8000`**. CORS is enabled for `localhost:5173` and `127.0.0.1:5173`. User flow: **Upload PDF** → **`document_id`** stored in the app → **Ask** / **Summary** / **Quiz**.
 

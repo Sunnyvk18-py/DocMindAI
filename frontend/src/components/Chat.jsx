@@ -27,11 +27,16 @@ export default function Chat({ documentId, disabled }) {
     setLoading(true);
     try {
       const data = await askQuestion(documentId, q);
+      // Stable id for React keys (crypto.randomUUID is missing in some older browsers).
+      const id =
+        typeof crypto !== "undefined" && crypto.randomUUID
+          ? crypto.randomUUID()
+          : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
       // Show the model answer; source_chunks are optional context for power users.
       setHistory((prev) => [
         ...prev,
         {
-          id: crypto.randomUUID(),
+          id,
           question: q,
           answer: data.answer,
           sources: data.source_chunks || [],
