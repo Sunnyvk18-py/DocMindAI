@@ -18,6 +18,7 @@ from pathlib import Path
 from typing import Any
 
 from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field, ValidationError
 
 from backend.chunker import chunk_text
@@ -194,6 +195,20 @@ app = FastAPI(
     title="DocMind AI",
     description="PDF upload, embeddings + FAISS, Q&A, summaries, and quizzes (MVP).",
     version="0.4.0",
+)
+
+# Allow the Vite dev server (and localhost variants) to call this API from the browser.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 

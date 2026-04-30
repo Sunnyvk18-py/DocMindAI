@@ -22,11 +22,13 @@ This is an **MVP**: data lives in RAM and is lost when the server stops. It is n
 - **OpenAI API** — embeddings + chat (JSON mode for study endpoints)
 - **faiss-cpu**, **numpy** — vector index and search
 - **python-dotenv** — load `OPENAI_API_KEY` from `.env`
+- **React (Vite) + Axios** — optional `frontend/` UI calling the same API
 
 ## Project layout
 
 | Path | Role |
 |------|------|
+| `frontend/` | React + Vite SPA (upload, ask, summary, quiz) |
 | `backend/app.py` | Routes, in-memory `DOCUMENTS` registry |
 | `backend/parser.py` | `extract_text_from_pdf()` |
 | `backend/chunker.py` | `chunk_text()` |
@@ -83,6 +85,26 @@ uvicorn backend.app:app --reload
 ```
 
 Interactive docs: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
+
+### Frontend (React + Vite)
+
+1. **Start the API** (from repo root, with `.env` set) — keep this terminal running:
+
+   ```bash
+   uvicorn backend.app:app --reload
+   ```
+
+2. **Install and run the UI** (second terminal):
+
+   ```bash
+   cd frontend
+   npm install
+   npm run dev
+   ```
+
+3. Open the URL Vite prints (usually [http://localhost:5173](http://localhost:5173)).
+
+The UI calls **`http://127.0.0.1:8000`**. CORS is enabled for `localhost:5173` and `127.0.0.1:5173`. User flow: **Upload PDF** → **`document_id`** stored in the app → **Ask** / **Summary** / **Quiz**.
 
 ## Automated tests (optional)
 
